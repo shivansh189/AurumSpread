@@ -5,7 +5,7 @@ Team AurumSpread: Shivansh Sahni • Krishna Sharma • Dhruv Gupta
 """
 
 from pathlib import Path
-import math
+import textwrap
 from typing import Dict, Any, List, Optional
 import numpy as np
 import pandas as pd
@@ -44,10 +44,16 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+
+def render_html(html_content: str) -> None:
+    """Safely render HTML without accidental markdown code block indentation."""
+    st.markdown(textwrap.dedent(html_content).strip(), unsafe_allow_html=True)
+
+
 # ---------------------------------------------------------
 # High-End Institutional FinTech Theme & Custom Styling
 # ---------------------------------------------------------
-st.markdown("""
+render_html("""
 <style>
 /* Root theme tokens */
 :root {
@@ -68,8 +74,8 @@ st.markdown("""
 
 /* App Background & Typography */
 .stApp {
-    background-color: var(--bg-main);
-    color: var(--text-primary);
+    background-color: #070B14;
+    color: #F1F5F9;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
 }
 
@@ -89,49 +95,13 @@ h1, h2, h3, h4, h5 {
 /* Sidebar styling */
 section[data-testid="stSidebar"] {
     background-color: #0A0F1D;
-    border-right: 1px solid var(--border-color);
-}
-
-/* Institutional Ticker Ribbon */
-.ticker-ribbon {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 10px 16px;
-    background: #0B1220;
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    margin-bottom: 20px;
-    align-items: center;
-}
-.ticker-chip {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: #111A2D;
-    border: 1px solid #1E2D4A;
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-}
-.ticker-symbol {
-    font-weight: 700;
-    color: var(--gold-primary);
-}
-.ticker-price {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-weight: 600;
-    color: #F8FAFC;
-}
-.ticker-sub {
-    font-size: 0.75rem;
-    color: var(--text-muted);
+    border-right: 1px solid #1F2E47;
 }
 
 /* Glassmorphism Cards */
 .glass-card {
     background: linear-gradient(135deg, rgba(14, 22, 38, 0.95) 0%, rgba(10, 16, 29, 0.95) 100%);
-    border: 1px solid var(--border-color);
+    border: 1px solid #1F2E47;
     border-radius: 12px;
     padding: 18px;
     box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
@@ -139,7 +109,7 @@ section[data-testid="stSidebar"] {
 }
 .glass-card-gold {
     background: linear-gradient(135deg, rgba(245, 197, 66, 0.05) 0%, rgba(14, 22, 38, 0.95) 100%);
-    border: 1px solid var(--border-gold);
+    border: 1px solid rgba(245, 197, 66, 0.25);
     border-radius: 12px;
     padding: 18px;
     margin-bottom: 16px;
@@ -148,18 +118,18 @@ section[data-testid="stSidebar"] {
 /* Metric cards override */
 div[data-testid="stMetric"] {
     background: linear-gradient(135deg, #0E1626 0%, #0B1220 100%);
-    border: 1px solid var(--border-color);
+    border: 1px solid #1F2E47;
     padding: 16px 20px;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     transition: transform 0.15s ease, border-color 0.15s ease;
 }
 div[data-testid="stMetric"]:hover {
-    border-color: var(--border-gold);
+    border-color: rgba(245, 197, 66, 0.25);
     transform: translateY(-2px);
 }
 div[data-testid="stMetricLabel"] {
-    color: var(--text-muted) !important;
+    color: #94A3B8 !important;
     font-size: 0.8rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -178,12 +148,12 @@ button[data-baseweb="tab"] {
     font-weight: 600 !important;
     padding: 12px 22px !important;
     border-radius: 8px 8px 0 0 !important;
-    color: var(--text-muted) !important;
+    color: #94A3B8 !important;
     transition: all 0.2s ease;
 }
 button[data-baseweb="tab"][aria-selected="true"] {
-    color: var(--gold-primary) !important;
-    border-bottom: 2px solid var(--gold-primary) !important;
+    color: #F5C542 !important;
+    border-bottom: 2px solid #F5C542 !important;
     background: rgba(245, 197, 66, 0.06) !important;
 }
 
@@ -206,7 +176,7 @@ button[data-baseweb="tab"][aria-selected="true"] {
 
 /* Buttons with gold gradient */
 .stButton button {
-    background: var(--gold-gradient);
+    background: linear-gradient(135deg, #F5C542 0%, #D4A017 100%);
     color: #070B14;
     border-radius: 8px;
     border: none;
@@ -219,22 +189,8 @@ button[data-baseweb="tab"][aria-selected="true"] {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(245, 197, 66, 0.3);
 }
-
-/* Workflow step pills */
-.step-pill {
-    background: #111A2D;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 0.85rem;
-}
-.step-number {
-    font-weight: 700;
-    color: var(--gold-primary);
-    margin-right: 6px;
-}
 </style>
-""", unsafe_allow_html=True)
+""")
 
 # ---------------------------------------------------------
 # Data Loading & Verification
@@ -301,7 +257,7 @@ def dialog_hedge_calculator():
     
     res = calculate_optimal_hedge(sym_a, sym_b, lots_a=lots_a, gold_price_per_g=avg_norm_price)
     
-    st.markdown(f"""
+    render_html(f"""
     <div class='glass-card-gold'>
         <div style='font-size: 0.85rem; color: #94A3B8;'>OPTIMAL INTEGER HEDGE RECOMMENDATION</div>
         <div style='font-size: 1.5rem; font-weight: 700; color: #F5C542; margin: 6px 0;'>
@@ -314,7 +270,7 @@ def dialog_hedge_calculator():
             • Smallest Exact Zero-Delta Ratio: <span class='badge-gold'>{res['exact_zero_delta_ratio']}</span> ({res['exact_matched_grams']}g)
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
 
 @st.dialog("🔬 Unit & Purity Normalization Lab")
@@ -325,12 +281,11 @@ def dialog_norm_lab():
     
     sample_close = st.number_input("Enter Sample MCX Close Price (₹)", value=75000.0, step=100.0)
     
-    # Calculate live
     test_df = pd.DataFrame({"symbol": [test_sym], "close": [sample_close]})
     res_df = normalize_gold_prices(test_df)
     norm_val = res_df.loc[0, "normalized_price_per_gram"]
     
-    st.markdown(f"""
+    render_html(f"""
     <div class='glass-card'>
         <h4 style='color: #F5C542;'>Contract: {spec['name']} ({test_sym})</h4>
         <p>• <b>Quotation Unit</b>: Quoted per <b>{spec['quote_unit_grams']}g</b><br>
@@ -343,37 +298,21 @@ def dialog_norm_lab():
         </div>
         <p style='color: #94A3B8; font-size: 0.85rem;'>Formula: <code>{spec['formula_str']}</code></p>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
 
 # ---------------------------------------------------------
-# Top Navigation & Header Bar
+# Top Navigation & Header Bar (Native Streamlit Components)
 # ---------------------------------------------------------
 col_head1, col_head2 = st.columns([3, 2])
 
 with col_head1:
-    st.markdown("""
-    <div style='display: flex; align-items: center; gap: 12px;'>
-        <div style='font-size: 2.2rem;'>🟡</div>
-        <div>
-            <div style='font-size: 1.8rem; font-weight: 800; color: #F8FAFC; letter-spacing: -0.02em;'>
-                AurumSpread <span style='color: #F5C542; font-size: 1rem; font-weight: 600; border: 1px solid rgba(245, 197, 66, 0.3); padding: 2px 8px; border-radius: 6px; vertical-align: middle;'>PRO</span>
-            </div>
-            <div style='color: #94A3B8; font-size: 0.88rem;'>
-                Institutional Relative-Value & Carry Intelligence for MCX Gold Futures
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.title("🟡 AurumSpread PRO")
+    st.caption("Institutional Commodity Relative-Value & Carry Intelligence for MCX Gold Futures")
 
 with col_head2:
-    st.markdown("""
-    <div style='text-align: right;'>
-        <span class='badge-gold'>Hack in Hills '26</span>
-        <span class='badge-blue'>Track 03: Commodity Intelligence</span><br>
-        <span style='font-size: 0.8rem; color: #94A3B8;'>Team: Shivansh Sahni • Krishna Sharma • Dhruv Gupta</span>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("**Hack in Hills '26** | Track 03: Commodity Intelligence")
+    st.caption("Team AurumSpread: Shivansh Sahni • Krishna Sharma • Dhruv Gupta")
     
     btn_c1, btn_c2, btn_c3 = st.columns(3)
     if btn_c1.button("🩺 Data Doctor", use_container_width=True):
@@ -383,29 +322,25 @@ with col_head2:
     if btn_c3.button("🔬 Purity Lab", use_container_width=True):
         dialog_norm_lab()
 
-st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
-
 # ---------------------------------------------------------
-# Live Ticker Ribbon
+# Live Ticker Ribbon (Native Metric Columns)
 # ---------------------------------------------------------
-ticker_html = "<div class='ticker-ribbon'><span style='font-size: 0.75rem; color: #94A3B8; font-weight: 700; text-transform: uppercase;'>MCX Gold Snapshot:</span>"
+st.markdown("##### 📌 MCX Gold Futures Live Snapshot (₹/1g 999 Gold)")
+t1, t2, t3, t4 = st.columns(4)
 
-for sym in ["GOLDM", "GOLDTEN", "GOLDGUINEA", "GOLDPETAL"]:
+for sym, col in zip(["GOLDM", "GOLDTEN", "GOLDGUINEA", "GOLDPETAL"], [t1, t2, t3, t4]):
     sub_df = latest_data[latest_data["symbol"] == sym]
     if not sub_df.empty:
         near_contract = sub_df.sort_values("expiry_date").iloc[0]
         norm_p = near_contract["normalized_price_per_gram"]
         raw_p = near_contract["close"]
         spec = CONTRACT_SPECS.get(sym, {})
-        ticker_html += f"""
-        <div class='ticker-chip'>
-            <span class='ticker-symbol'>{sym}</span>
-            <span class='ticker-price'>₹{norm_p:,.2f}/g</span>
-            <span class='ticker-sub'>(MCX: ₹{raw_p:,.0f} • {spec.get('lot_size_grams', 10)}g lot)</span>
-        </div>
-        """
-ticker_html += "</div>"
-st.markdown(ticker_html, unsafe_allow_html=True)
+        col.metric(
+            label=f"{sym} ({spec.get('lot_size_grams', 10)}g • {spec.get('purity', 999)} Purity)",
+            value=f"₹{norm_p:,.2f}/g",
+            delta=f"MCX Close: ₹{raw_p:,.0f}",
+            delta_color="off",
+        )
 
 # ---------------------------------------------------------
 # Onboarding Workflow Card (Expandable / Guided)
@@ -413,32 +348,14 @@ st.markdown(ticker_html, unsafe_allow_html=True)
 with st.expander("🗺️ How AurumSpread Solves Commodity Spread Intelligence (30-Second Tour)", expanded=False):
     step_c1, step_c2, step_c3 = st.columns(3)
     with step_c1:
-        st.markdown("""
-        <div class='step-pill'>
-            <span class='step-number'>STEP 1</span> <b>Unit & Purity Normalization</b>
-            <p style='color: #94A3B8; font-size: 0.8rem; margin-top: 4px;'>
-                Converts 4 disjoint MCX contracts (100g, 10g, 8g, 1g) and purity (995 vs 999) into a clean, apples-to-apples ₹/1g benchmark.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("**STEP 1: Unit & Purity Normalization**")
+        st.caption("Converts 4 disjoint MCX contracts (100g, 10g, 8g, 1g) and purity (995 vs 999) into a uniform, apples-to-apples ₹/1g of 999 gold benchmark.")
     with step_c2:
-        st.markdown("""
-        <div class='step-pill'>
-            <span class='step-number'>STEP 2</span> <b>Carry & Term Structure</b>
-            <p style='color: #94A3B8; font-size: 0.8rem; margin-top: 4px;'>
-                Constructs the forward curve and separates predictable cost-of-carry decay (roll-down) from true statistical mispricing.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("**STEP 2: Carry & Forward Curve**")
+        st.caption("Constructs the forward term structure and separates predictable carrying cost decay (roll-down) from true statistical mispricing.")
     with step_c3:
-        st.markdown("""
-        <div class='step-pill'>
-            <span class='step-number'>STEP 3</span> <b>Honest Survival Proof</b>
-            <p style='color: #94A3B8; font-size: 0.8rem; margin-top: 4px;'>
-                Enforces MCX 5-day tender lockout and volume haircuts to prove whether an apparent arbitrage edge survives real fees & taxes.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("**STEP 3: Honest Survival Proof**")
+        st.caption("Enforces the MCX 5-day physical tender lockout and volume haircuts to prove whether an apparent arbitrage edge survives real fees and slippage.")
 
 # ---------------------------------------------------------
 # Sidebar Controls & 1-Click Strategy Presets
@@ -446,7 +363,6 @@ with st.expander("🗺️ How AurumSpread Solves Commodity Spread Intelligence (
 with st.sidebar:
     st.markdown("### 🎛️ Strategy Presets & Controls")
     
-    # 1-Click Presets using st.segmented_control
     preset_choice = st.segmented_control(
         "1-Click Quant Presets",
         options=["Institutional", "Balanced", "Aggressive", "Custom"],
@@ -454,7 +370,6 @@ with st.sidebar:
         help="Quickly populate backtest thresholds and risk rules based on institutional risk tolerance.",
     )
     
-    # Preset default maps
     if preset_choice == "Institutional":
         default_entry_z = 2.5
         default_exit_z = 0.2
@@ -512,14 +427,8 @@ with st.sidebar:
     sb_lots = st.number_input("Lots Traded", min_value=1, max_value=50, value=1)
 
     st.markdown("---")
-    st.markdown("""
-    <div style='font-size: 0.75rem; color: #94A3B8;'>
-        <b>Data Integrity Guarantee</b><br>
-        • Historical MCX Bhavcopy (Jul–Oct 2026)<br>
-        • Expanding window calculations (Zero lookahead)<br>
-        • Multi-instrument purity adjustments (995 → 999)
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("**Data Integrity Guarantee**")
+    st.caption("• Historical MCX Bhavcopy (Jul–Oct 2026)\n• Expanding window calculations (Zero lookahead)\n• Multi-instrument purity adjustments (995 → 999)")
 
 # ---------------------------------------------------------
 # The 4 Main Trader Dashboard Tabs (Matching PPT Slide 6)
@@ -535,17 +444,8 @@ tabs = st.tabs([
 # TAB 1: FAIR PRICE & QUIET ALERT
 # =========================================================
 with tabs[0]:
-    st.markdown("""
-    <div style='display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;'>
-        <div>
-            <h3 style='margin: 0;'>Fair Price Normalization & Quiet Alert Scanner</h3>
-            <div style='color: #94A3B8; font-size: 0.88rem;'>
-                Converts disparate contracts to ₹/1g 999 gold and silences noise, fee traps, and delivery risks.
-            </div>
-        </div>
-        <span class='badge-gold'>MCX Purity Calibrated</span>
-    </div>
-    """, unsafe_allow_html=True)
+    st.subheader("Fair Price Normalization & Quiet Alert Scanner")
+    st.caption("Converts disparate contracts to ₹/1g 999 gold and silences noise, fee traps, and delivery risks.")
 
     # Top KPI Metrics
     tk1, tk2, tk3, tk4 = st.columns(4)
@@ -554,7 +454,7 @@ with tabs[0]:
     tk3.metric("Tradable Expiries", len(latest_data), "Active Across 4 Contracts")
     tk4.metric("Active Capital Defense", "Quiet Alerts Enabled", delta="Noise Suppressed")
 
-    st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+    st.markdown("---")
 
     # 1. Normalized Price Movement Chart & Dispersion
     c_p1, c_p2 = st.columns([3, 2])
@@ -610,7 +510,6 @@ with tabs[0]:
     qk4.metric("Fee / Cost Traps", alert_res["cost_suppressed_count"], help="Blocked: Gross edge < Roundtrip transaction friction")
     qk5.metric("Active Quiet Alerts", alert_res["active_alerts_count"], delta="Executable Alpha" if alert_res["active_alerts_count"] > 0 else "0 False Alarms")
 
-    # Segmented filter buttons for easy user inspection
     view_filter = st.pills(
         "Filter Pairs By Status",
         options=["All Scanned Pairs", "Triggered & Suppressed Only", "Tender Lockout", "Fair Value"],
@@ -658,17 +557,8 @@ with tabs[0]:
 # TAB 2: EXPIRY CALENDAR & LIQUIDITY
 # =========================================================
 with tabs[1]:
-    st.markdown("""
-    <div style='display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;'>
-        <div>
-            <h3 style='margin: 0;'>Contract Lifecycle, Expiry Calendar & Liquidity Depth</h3>
-            <div style='color: #94A3B8; font-size: 0.88rem;'>
-                Monitors volume & open interest concentration, flags illiquid expiries, and enforces tender lockout.
-            </div>
-        </div>
-        <span class='badge-orange'>Tender Protection Active</span>
-    </div>
-    """, unsafe_allow_html=True)
+    st.subheader("Contract Lifecycle, Expiry Calendar & Liquidity Depth")
+    st.caption("Monitors volume & open interest concentration, flags illiquid expiries, and enforces tender lockout.")
 
     depth_data = calculate_liquidity_depth(df)
     latest_depth = depth_data[depth_data["trade_date"] == latest_date].copy()
@@ -681,7 +571,7 @@ with tabs[1]:
     lk3.metric("Tier 3: Thin / Illiquid", tier_counts.get("Illiquid / Thin (Tier 3)", 0), "Slippage Haircut Required")
     lk4.metric("Tender Delivery Lockout", tier_counts.get("Tender Lockout (High Risk)", 0), "Mandatory Physical Delivery")
 
-    st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+    st.markdown("---")
 
     # Volume & Open Interest Depth Charts
     col_v1, col_v2 = st.columns(2)
@@ -741,19 +631,10 @@ with tabs[1]:
 # TAB 3: FUTURES CURVE & CARRY
 # =========================================================
 with tabs[2]:
-    st.markdown("""
-    <div style='display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;'>
-        <div>
-            <h3 style='margin: 0;'>Futures Forward Curve, Implied Carry & Micro-Premium</h3>
-            <div style='color: #94A3B8; font-size: 0.88rem;'>
-                Constructs the forward term structure, separates roll-down from alpha, and analyzes retail convenience markups.
-            </div>
-        </div>
-        <span class='badge-blue'>Term Structure Engine</span>
-    </div>
-    """, unsafe_allow_html=True)
+    st.subheader("Futures Forward Curve, Implied Carry & Retail Micro-Premium")
+    st.caption("Constructs the forward term structure, separates roll-down from alpha, and analyzes retail convenience markups.")
 
-    c_sym_col, c_date_col = st.columns([1, 2])
+    c_sym_col, _ = st.columns([1, 2])
     with c_sym_col:
         selected_curve_sym = st.selectbox(
             "Select Contract Curve",
@@ -775,7 +656,7 @@ with tabs[2]:
         ck3.metric("Annualized Implied Carry", f"{avg_carry:.2f}% p.a." if pd.notna(avg_carry) else "N/A")
         ck4.metric("Forward Market Regime", regime, delta="Normal Contango" if "Contango" in regime else "Backwardation")
 
-        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+        st.markdown("---")
 
         col_fc1, col_fc2 = st.columns([3, 2])
 
@@ -866,29 +747,15 @@ with tabs[2]:
             sum_prem["Min Markup (₹/g)"] = sum_prem["Min Markup (₹/g)"].apply(lambda x: f"₹{x:.2f}")
             st.dataframe(sum_prem, use_container_width=True, hide_index=True)
             
-            st.markdown("""
-            <div style='background: #111A2D; border: 1px solid #1E2D4A; border-radius: 8px; padding: 12px; font-size: 0.8rem; color: #94A3B8;'>
-                <b>Quant Takeaway</b>: Retail traders pay a persistent ₹2–₹5/g convenience markup for small-ticket 1g (GOLDPETAL) and 8g (GOLDGUINEA) contracts.
-                Naive spread models falsely view this as mispricing, leading to chronic losing short positions.
-            </div>
-            """, unsafe_allow_html=True)
+            st.info("💡 **Quant Takeaway**: Retail traders pay a persistent ₹2–₹5/g convenience markup for small-ticket 1g (GOLDPETAL) and 8g (GOLDGUINEA) contracts. Naive spread models falsely view this as mispricing.")
 
 
 # =========================================================
 # TAB 4: PROFIT VS FEES SIMULATOR ("WHAT KILLS THE EDGE?")
 # =========================================================
 with tabs[3]:
-    st.markdown("""
-    <div style='display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;'>
-        <div>
-            <h3 style='margin: 0;'>Profit vs Fees Simulator & Walk-Forward Survival Proof</h3>
-            <div style='color: #94A3B8; font-size: 0.88rem;'>
-                Directly compares pre-cost theoretical equity against post-cost net equity to prove if alpha survives fees and slippage.
-            </div>
-        </div>
-        <span class='badge-gold'>Walk-Forward Validated</span>
-    </div>
-    """, unsafe_allow_html=True)
+    st.subheader("Profit vs Fees Simulator & Walk-Forward Survival Proof")
+    st.caption("Directly compares pre-cost theoretical equity against post-cost net equity to prove if alpha survives fees and slippage.")
 
     # Simplified Instrument & Pair Selector
     col_bt1, col_bt2 = st.columns([1, 2])
@@ -957,7 +824,7 @@ with tabs[3]:
     bk5.metric("Win Rate", f"{bt_summary['win_rate']:.1f}%")
     bk6.metric("Max Drawdown", f"₹{bt_summary['max_drawdown']:,.2f}")
 
-    st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+    st.markdown("---")
 
     # Overlaid Pre-Cost vs Post-Cost Equity Curve
     st.markdown("##### 📉 Honest Pre-Cost vs Post-Cost Equity Curve (USP 4)")
@@ -999,7 +866,7 @@ with tabs[3]:
         current_friction = sb_cost_per_leg + sb_slippage_per_leg
         is_viable = current_friction < be_cost
         
-        st.markdown(f"""
+        render_html(f"""
         <div class='glass-card'>
             <div style='display: flex; justify-content: space-between; align-items: center;'>
                 <div>
@@ -1019,7 +886,7 @@ with tabs[3]:
                 • <i>If total transaction costs, brokerage, and slippage exceed <b>₹{be_cost:.2f}/leg</b>, strategy P&L turns negative.</i>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
     with col_k2:
         st.markdown("##### 🌪️ Signal Suppression Funnel")
