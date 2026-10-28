@@ -19,6 +19,77 @@ st.set_page_config(
     page_icon="🟡",
     layout="wide",
 )
+st.markdown("""
+<style>
+/* Main background */
+.stApp {
+    background-color: #0B1120;
+    color: #E5E7EB;
+}
+
+/* Main content spacing */
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* Headings */
+h1, h2, h3 {
+    color: #F5C542 !important;
+    font-weight: 700;
+}
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background-color: #111827;
+    border-right: 1px solid #263247;
+}
+
+/* Metric cards */
+div[data-testid="stMetric"] {
+    background-color: #151F32;
+    border: 1px solid #263247;
+    padding: 18px;
+    border-radius: 12px;
+}
+
+/* Metric labels */
+div[data-testid="stMetricLabel"] {
+    color: #9CA3AF;
+}
+
+/* Metric values */
+div[data-testid="stMetricValue"] {
+    color: #F5C542;
+}
+
+/* Tabs */
+button[data-baseweb="tab"] {
+    color: #D1D5DB;
+}
+
+/* Data tables */
+div[data-testid="stDataFrame"] {
+    border: 1px solid #263247;
+    border-radius: 10px;
+}
+
+/* Buttons */
+.stButton button {
+    background-color: #F5C542;
+    color: #111827;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+}
+
+/* Select boxes and input fields */
+div[data-baseweb="select"] > div {
+    background-color: #151F32;
+    border-color: #263247;
+}
+</style>
+""", unsafe_allow_html=True)
 
 st.title("🟡 AurumSpread")
 st.caption(
@@ -61,6 +132,11 @@ tabs = st.tabs([
 
 with tabs[0]:
     st.subheader("Market Overview")
+
+    st.caption(
+    "MCX gold futures | Historical market statistics "
+    "and normalized price overview"
+)
 
     
     # Summary metrics for the latest trading date.
@@ -126,8 +202,8 @@ else:
         f"Historical dataset contains {trading_days} trading days. "
         "Historical price movement can now be evaluated."
     )
-
-    st.dataframe(
+    with st.expander("📊 View Historical Dataset", expanded=False):
+      st.dataframe(
         df[
             [
                 "trade_date",
@@ -138,8 +214,8 @@ else:
             ]
         ].sort_values(["symbol", "expiry_date"]),
         use_container_width=True,
+        hide_index=True,
     )
-
     
     # Show price movement across trading dates.
     
@@ -163,17 +239,52 @@ else:
     ].sort_values("trade_date")
 
     fig = px.line(
-        chart_data,
-        x="trade_date",
-        y="normalized_price_per_gram",
-        color="symbol",
-        markers=True,
-        title="Price Movement for Selected Expiry (₹/gram)",
-        hover_data=["expiry_date", "close"],
-    )
+    chart_data,
+    x="trade_date",
+    y="normalized_price_per_gram",
+    color="symbol",
+    markers=True,
+    title="Historical Gold Price Movement",
+    hover_data=["expiry_date", "close"],
+)
 
-    st.plotly_chart(fig, use_container_width=True)
+    fig.update_layout(
+    template="plotly_dark",
+    paper_bgcolor="#0B1120",
+    plot_bgcolor="#0B1120",
+    font=dict(
+        color="#E5E7EB",
+        family="Arial",
+    ),
+    title=dict(
+        font=dict(
+            color="#F5C542",
+            size=20,
+        ),
+    ),
+    xaxis=dict(
+        title="Trading Date",
+        showgrid=True,
+        gridcolor="#263247",
+    ),
+    yaxis=dict(
+        title="Normalized Price (₹/gram)",
+        showgrid=True,
+        gridcolor="#263247",
+    ),
+    legend=dict(
+        title="Gold Instrument",
+        bgcolor="#151F32",
+    ),
+    margin=dict(l=20, r=20, t=60, b=20),
+)
 
+    fig.update_traces(
+    line=dict(width=3),
+    marker=dict(size=6),
+)
+
+    st.plotly_chart(fig, use_container_width=True) 
 
     st.subheader("Daily Price Change")
 
