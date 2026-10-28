@@ -8,23 +8,22 @@ def calculate_calendar_spreads(
     """
     Calculate calendar spreads for one gold instrument.
 
-    Calendar spread = Far-expiry price - Near-expiry price
+    Calendar spread = far-expiry normalized price
+                     - near-expiry normalized price
 
-    Only contracts observed on the same trading date
-    are compared.
+    Raw MCX close prices are retained separately for P&L.
     """
 
     required_columns = [
         "trade_date",
         "symbol",
         "expiry_date",
+        "close",
         "normalized_price_per_gram",
     ]
 
-    # Validate required columns
     missing_columns = [
-        column
-        for column in required_columns
+        column for column in required_columns
         if column not in df.columns
     ]
 
@@ -33,111 +32,72 @@ def calculate_calendar_spreads(
             f"Missing required columns: {missing_columns}"
         )
 
-    # Keep only the selected instrument
-    data = df[
-        df["symbol"] == symbol
-    ].copy()
+    data = df[df["symbol"] == symbol].copy()
 
     if data.empty:
-        raise ValueError(
-            f"No data found for symbol: {symbol}"
-        )
+        raise ValueError(f"No data found for symbol: {symbol}")
 
-    # Convert dates and prices
     data["trade_date"] = pd.to_datetime(
-    data["trade_date"],
-    format="%Y-%m-%d",
-    errors="coerce"
-)
-
-    data["expiry_date"] = pd.to_datetime(
-    data["expiry_date"],
-    format="%d%b%Y",
-    errors="coerce"
-)
-
-    data["normalized_price_per_gram"] = pd.to_numeric(
-        data["normalized_price_per_gram"],
-        errors="coerce",
+        data["trade_date"], errors="coerce", format="mixed"
     )
 
-    # Remove invalid records
+    data["expiry_date"] = pd.to_datetime(
+        data["expiry_date"], errors="coerce", format="mixed"
+    )
+
+    for column in ["close", "normalized_price_per_gram"]:
+        data[column] = pd.to_numeric(
+            data[column], errors="coerce"
+        )
+
     data = data.dropna(
         subset=[
             "trade_date",
             "expiry_date",
+            "close",
             "normalized_price_per_gram",
         ]
     )
 
-    # Remove duplicate contract observations
     data = data.drop_duplicates(
-        subset=[
-            "trade_date",
-            "symbol",
-            "expiry_date",
-        ],
+        subset=["trade_date", "symbol", "expiry_date"],
         keep="last",
     )
 
-    # Sort contracts by expiry
-    data = data.sort_values(
-        ["trade_date", "expiry_date"]
-    )
+    data = data.sort_values(["trade_date", "expiry_date"])
 
     results = []
 
-    # Process each trading date independently
-    for trade_date, daily_data in data.groupby(
-        "trade_date"
-    ):
-
-        daily_data = daily_data.sort_values(
-            "expiry_date"
+    for trade_date, daily_data in data.groupby("trade_date"):
+        contracts = daily_data.sort_values("expiry_date").to_dict(
+            "records"
         )
 
-        contracts = daily_data[
-            [
-                "expiry_date",
-                "normalized_price_per_gram",
-            ]
-        ].to_dict("records")
-
-        # Compare every available expiry pair
         for i in range(len(contracts)):
-
             for j in range(i + 1, len(contracts)):
+                near = contracts[i]
+                far = contracts[j]
 
-                near_contract = contracts[i]
-                far_contract = contracts[j]
-
-                near_price = near_contract[
-                    "normalized_price_per_gram"
-                ]
-
-                far_price = far_contract[
-                    "normalized_price_per_gram"
-                ]
+                near_price = near["normalized_price_per_gram"]
+                far_price = far["normalized_price_per_gram"]
 
                 spread = far_price - near_price
 
                 results.append({
                     "trade_date": trade_date,
                     "symbol": symbol,
+                    "near_expiry": near["expiry_date"],
+                    "far_expiry": far["expiry_date"],
 
-                    "near_expiry": near_contract[
-                        "expiry_date"
-                    ],
-
-                    "far_expiry": far_contract[
-                        "expiry_date"
-                    ],
-
+                    # Normalized prices for spread signals.
                     "near_price": near_price,
                     "far_price": far_price,
 
-                    "calendar_spread": spread,
+                    # Raw MCX close prices for contract P&L.
+                    "near_raw_price": near["close"],
+                    "far_raw_price": far["close"],
 
+                    "calendar_spread": spread,
                     "spread_percent": (
                         spread / near_price * 100
                         if near_price != 0
@@ -151,9 +111,5 @@ def calculate_calendar_spreads(
         return spread_df
 
     return spread_df.sort_values(
-        [
-            "trade_date",
-            "near_expiry",
-            "far_expiry",
-        ]
+        ["trade_date", "near_expiry", "far_expiry"]
     ).reset_index(drop=True)

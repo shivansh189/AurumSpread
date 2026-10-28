@@ -26,25 +26,56 @@ def calculate_spread_intelligence(
 
     data = spread_data.copy()
 
-    data["trade_date"] = pd.to_datetime(
-        data["trade_date"],
-        errors="coerce",
+# Preserve actual MCX contract prices
+    near_candidates = [
+        "near_raw_price",
+        "near_price",
+        "near_close",
+    ]
+
+    far_candidates = [
+        "far_raw_price",
+        "far_price",
+        "far_close",
+    ]
+
+    near_col = next(
+        (c for c in near_candidates if c in data.columns),
+        None,
     )
 
-    data["near_expiry"] = pd.to_datetime(
-        data["near_expiry"],
-        errors="coerce",
+    far_col = next(
+        (c for c in far_candidates if c in data.columns),
+        None,
     )
 
-    data["far_expiry"] = pd.to_datetime(
-        data["far_expiry"],
-        errors="coerce",
-    )
+    if near_col:
+        data["near_raw_price"] = pd.to_numeric(
+            data[near_col], errors="coerce"
+        )
 
-    data["calendar_spread"] = pd.to_numeric(
-        data["calendar_spread"],
-        errors="coerce",
-    )
+    if far_col:
+        data["far_raw_price"] = pd.to_numeric(
+            data[far_col], errors="coerce"
+        )
+
+    # Parse and validate data
+    for col in [
+        "trade_date",
+        "near_expiry",
+        "far_expiry",
+    ]:
+        data[col] = pd.to_datetime(
+            data[col], errors="coerce"
+        )
+
+    for col in [
+        "calendar_spread",
+        "spread_percent",
+    ]:
+        data[col] = pd.to_numeric(
+            data[col], errors="coerce"
+        )
 
     data = data.dropna(
         subset=[
@@ -55,83 +86,94 @@ def calculate_spread_intelligence(
         ]
     )
 
-    data = data.sort_values("trade_date").reset_index(drop=True)
+    # Group statistics independently by symbol and expiry pair
+    group_columns = []
 
-    # Daily change in the calendar spread.
-    data["spread_change"] = data["calendar_spread"].diff()
+    if "symbol" in data.columns:
+        group_columns.append("symbol")
 
-    # Spread widening or narrowing.
+    group_columns.extend([
+        "near_expiry",
+        "far_expiry",
+    ])
+
+    data = data.sort_values(
+        group_columns + ["trade_date"]
+    ).reset_index(drop=True)
+
+    # Spread changes and direction
+    data["spread_change"] = (
+        data.groupby(group_columns)["calendar_spread"]
+        .diff()
+    )
+
     data["spread_direction"] = data["spread_change"].apply(
-        lambda change: (
-            "Widening"
-            if change > 0
-            else "Narrowing"
-            if change < 0
-            else "Unchanged"
-            if pd.notna(change)
+        lambda x: (
+            "Widening" if x > 0
+            else "Narrowing" if x < 0
+            else "Unchanged" if pd.notna(x)
             else None
         )
     )
 
-    # Historical percentile using prior observations only.
-    def calculate_prior_percentile(series):
+    # Historical percentile: only prior observations
+    def prior_percentile(series):
+        values = series.to_numpy()
         result = []
 
-        for i, current_value in enumerate(series):
-            history = series.iloc[:i]
+        for i, value in enumerate(values):
+            history = values[:i]
 
-            if history.empty:
+            if len(history) == 0:
                 result.append(float("nan"))
             else:
                 percentile = (
-                    (history < current_value).sum()
-                    + 0.5 * (history == current_value).sum()
+                    (history < value).sum()
+                    + 0.5 * (history == value).sum()
                 ) / len(history) * 100
 
                 result.append(percentile)
 
-        return pd.Series(result, index=series.index)
+        return pd.Series(
+            result,
+            index=series.index,
+        )
 
-    data["spread_percentile"] = calculate_prior_percentile(
-        data["calendar_spread"]
+    data["spread_percentile"] = (
+        data.groupby(group_columns)["calendar_spread"]
+        .transform(prior_percentile)
     )
 
-    # Expanding historical mean and standard deviation,
-    # shifted by one observation to exclude the current value.
+    # Historical mean/std/count: use prior observations only
+    grouped_spread = data.groupby(
+        group_columns
+    )["calendar_spread"]
 
-    # Calculate historical mean using only prior observations.
-    historical_mean = (
-        data["calendar_spread"]
-        .expanding()
-        .mean()
-        .shift(1)
+    data["historical_mean"] = (
+        grouped_spread
+        .transform(lambda s: s.expanding().mean().shift(1))
     )
 
-    # Calculate historical standard deviation using only prior observations.
-    historical_std = (
-        data["calendar_spread"]
-        .expanding()
-        .std()
-        .shift(1)
+    data["historical_std"] = (
+        grouped_spread
+        .transform(lambda s: s.expanding().std().shift(1))
     )
 
-    # Count how many prior observations are available.
-    prior_observation_count = (
-        data["calendar_spread"]
-        .expanding()
-        .count()
-        .shift(1)
+    data["prior_observation_count"] = (
+        grouped_spread
+        .transform(lambda s: s.expanding().count().shift(1))
     )
 
-    # Calculate z-score.
+    # Z-score
     data["spread_zscore"] = (
-        data["calendar_spread"] - historical_mean
-    ) / historical_std
+        data["calendar_spread"]
+        - data["historical_mean"]
+    ) / data["historical_std"]
 
-    # Require at least 10 prior observations before producing a z-score.
+    # Require at least 10 prior observations
     data.loc[
-        prior_observation_count < 10,
-        "spread_zscore"
+        data["prior_observation_count"] < 10,
+        "spread_zscore",
     ] = float("nan")
 
     return data

@@ -34,3 +34,5 @@ data/test_downloads/
 
 # Download logs
 data/mcx_download_log.txt
+# Local backups
+*backup*.py

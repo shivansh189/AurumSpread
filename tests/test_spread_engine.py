@@ -1,87 +1,38 @@
+"""Test calendar spread calculation engine."""
+
 from pathlib import Path
-
 import pandas as pd
-
+import pytest
 from src.spread_engine import calculate_calendar_spreads
 
 
-# Load processed MCX historical data
-DATA_PATH = Path(
-    "data/processed/historical_gold_futures.csv"
-)
+def test_calculate_calendar_spreads():
+    data_path = Path("data/processed/historical_gold_futures.csv")
+    if not data_path.exists():
+        pytest.skip("Historical dataset not found")
 
-df = pd.read_csv(DATA_PATH)
+    df = pd.read_csv(data_path)
+    symbol = "GOLDGUINEA"
 
-# Select one gold instrument
-symbol = "GOLDGUINEA"
+    spreads = calculate_calendar_spreads(df=df, symbol=symbol)
 
-print("\nDATE FORMAT CHECK")
-print(df["trade_date"].head().to_list())
-print(df["expiry_date"].head().to_list())
-print(df["trade_date"].dtype)
-print(df["expiry_date"].dtype)
+    assert not spreads.empty
+    expected_cols = [
+        "trade_date",
+        "symbol",
+        "near_expiry",
+        "far_expiry",
+        "near_price",
+        "far_price",
+        "calendar_spread",
+        "spread_percent",
+    ]
+    for col in expected_cols:
+        assert col in spreads.columns
 
-# Calculate calendar spreads
-spreads = calculate_calendar_spreads(
-    df=df,
-    symbol=symbol,
-)
+    # Verify that far_expiry > near_expiry
+    assert (pd.to_datetime(spreads["far_expiry"]) > pd.to_datetime(spreads["near_expiry"])).all()
 
-# Display results
-print("\nCALENDAR SPREAD ENGINE TEST")
-print("--------------------------")
-
-print("Selected instrument:", symbol)
-print("Total spread observations:", len(spreads))
-
-if not spreads.empty:
-
-    print("\nFirst 10 spread observations:")
-
-    print(
-        spreads.head(10).to_string(
-            index=False
-        )
-    )
-
-    print("\nUnique trading dates:")
-    print(
-        spreads["trade_date"].nunique()
-    )
-
-    print("\nUnique expiry pairs:")
-    print(
-        spreads[
-            ["near_expiry", "far_expiry"]
-        ].drop_duplicates().shape[0]
-    )
-
-    print("\nMissing spread values:")
-    print(
-        spreads["calendar_spread"].isna().sum()
-    )
-
-    print("\nDuplicate spread observations:")
-    print(
-        spreads.duplicated(
-            [
-                "trade_date",
-                "symbol",
-                "near_expiry",
-                "far_expiry",
-            ]
-        ).sum()
-    )
-
-else:
-    print(
-        "No calendar spreads were generated."
-    )
-
-pair = spreads[
-    (spreads["near_expiry"] == pd.Timestamp("2026-07-31"))
-    & (spreads["far_expiry"] == pd.Timestamp("2026-08-31"))
-]
-
-print("\nJULY-AUGUST EXPIRY PAIR")
-print(pair.tail(5).to_string(index=False))    
+    # Verify that spread = far_price - near_price
+    diff = spreads["far_price"] - spreads["near_price"]
+    assert (abs(spreads["calendar_spread"] - diff) < 1e-4).all()

@@ -1,65 +1,47 @@
+"""Test spread intelligence (Z-score, percentiles, directional statistics)."""
+
 from pathlib import Path
-
 import pandas as pd
-
+import pytest
 from src.spread_engine import calculate_calendar_spreads
 from src.spread_intelligence import calculate_spread_intelligence
 
 
-DATA_PATH = Path(
-    "data/processed/historical_gold_futures.csv"
-)
+def test_spread_intelligence():
+    data_path = Path("data/processed/historical_gold_futures.csv")
+    if not data_path.exists():
+        pytest.skip("Historical dataset not found")
 
-df = pd.read_csv(DATA_PATH)
+    df = pd.read_csv(data_path)
+    symbol = "GOLDGUINEA"
 
-# Select the instrument to test.
-symbol = "GOLDGUINEA"
+    spreads = calculate_calendar_spreads(df=df, symbol=symbol)
+    assert not spreads.empty
 
-# Calculate calendar spreads.
-spreads = calculate_calendar_spreads(
-    df=df,
-    symbol=symbol,
-)
+    pairs = spreads[["near_expiry", "far_expiry"]].drop_duplicates()
+    first_pair = pairs.iloc[0]
 
-# Select one expiry pair.
-pair = spreads[
-    (spreads["near_expiry"] == pd.Timestamp("2026-07-31"))
-    & (spreads["far_expiry"] == pd.Timestamp("2026-08-31"))
-].copy()
+    selected_spread = spreads[
+        (spreads["near_expiry"] == first_pair["near_expiry"])
+        & (spreads["far_expiry"] == first_pair["far_expiry"])
+    ].copy()
 
-# Calculate spread intelligence.
-intelligence = calculate_spread_intelligence(pair)
+    intelligence = calculate_spread_intelligence(selected_spread)
 
-print("\nSPREAD INTELLIGENCE TEST")
-print("-----------------------")
+    assert not intelligence.empty
+    expected_cols = [
+        "trade_date",
+        "calendar_spread",
+        "spread_direction",
+        "spread_percentile",
+        "historical_mean",
+        "historical_std",
+        "spread_zscore",
+    ]
+    for col in expected_cols:
+        assert col in intelligence.columns
 
-print("Instrument:", symbol)
-print("Expiry pair: 31 Jul 2026 - 31 Aug 2026")
-print("Observations:", len(intelligence))
-
-print("\nLatest 10 observations:")
-
-print(
-    intelligence[
-        [
-            "trade_date",
-            "calendar_spread",
-            "spread_change",
-            "spread_direction",
-            "spread_percentile",
-            "spread_zscore",
-        ]
-    ].tail(10).to_string(index=False)
-)
-
-print("\nMissing values:")
-
-print(
-    intelligence[
-        [
-            "spread_change",
-            "spread_percentile",
-            "spread_zscore",
-        ]
-    ].isna().sum()
-)
+    # Verify that Z-scores are NaN for < 10 prior observations
+    if len(intelligence) > 10:
+        first_few_nan = intelligence["spread_zscore"].iloc[:9].isna().all()
+        assert first_few_nan
