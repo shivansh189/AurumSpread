@@ -1,0 +1,49 @@
+{
+  "description": "Recorded TinyFish web-agent observations of mcxindia.com, replayed by src/agent_verification.py and compared against data/processed/historical_gold_futures.csv. Agent runs take minutes and cost credits, so results are recorded rather than re-run on every page load.",
+  "source": "https://www.mcxindia.com/market-data/bhavcopy",
+  "provider": "TinyFish Agent API (stealth browser profile)",
+  "runs": [
+    {
+      "kind": "date_integrity",
+      "label": "Valid trading day is served correctly",
+      "run_id": "faad1803-4d9b-449d-9a8b-60c05ffe7104",
+      "ran_at": "2026-11-17T23:38:41Z",
+      "steps": 39,
+      "requested_date": "17/11/2026",
+      "displayed_date": "17 Nov 2026",
+      "date_matches": true,
+      "expect_match": true,
+      "note": "Agent set the Date Wise date field to 17/11/2026 and the results table returned 17 Nov 2026. Requested and served dates agree."
+    },
+    {
+      "kind": "date_integrity",
+      "label": "Market holiday is silently substituted",
+      "run_id": "f5938a8e-c713-47e4-9d3b-86a4f6aeaa64",
+      "ran_at": "2026-11-18T00:03:37Z",
+      "steps": 7,
+      "requested_date": "02/10/2026",
+      "displayed_date": "17 Nov 2026",
+      "date_matches": false,
+      "expect_match": false,
+      "note": "02 Oct 2026 was Mahatma Gandhi Jayanti, a full MCX trading holiday. The page returned 17 Nov 2026 data while the date input still read 02/10/2026, and showed no message about the substitution. This is the failure mode the problem statement warns about, and a downloaded file cannot detect it."
+    },
+    {
+      "kind": "row_integrity",
+      "label": "GOLDM December expiry re-read from the live page",
+      "run_id": "a9acb142-627c-4feb-9cb3-8d147fc00545",
+      "ran_at": "2026-11-17T23:52:16Z",
+      "steps": 22,
+      "trade_date": "2026-11-17",
+      "rows": [
+        {
+          "symbol": "GOLDM",
+          "expiry_date": "04DEC2026",
+          "close": 134304,
+          "volume_lots": 46721,
+          "open_interest_lots": 46179
+        }
+      ],
+      "note": "Read via the Commodity Wise tab (Instrument FUTCOM, Symbol GOLDM, 17/11/2026, nearest expiry). The Date Wise tab paginates across ~1164 pages with no symbol filter, so the agent located the Commodity Wise path on its own."
+    }
+  ]
+}
