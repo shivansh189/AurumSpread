@@ -44,6 +44,24 @@
         }
       ],
       "note": "Read via the Commodity Wise tab (Instrument FUTCOM, Symbol GOLDM, 17/11/2026, nearest expiry). The Date Wise tab paginates across ~1164 pages with no symbol filter, so the agent located the Commodity Wise path on its own."
+    },
+    {
+      "kind": "row_integrity",
+      "label": "GOLDPETAL far expiry re-read from the live page",
+      "run_id": "eb3ca690-f954-480e-b6e2-d67f12685494",
+      "ran_at": "2026-11-18T00:04:30Z",
+      "steps": 17,
+      "trade_date": "2026-11-17",
+      "rows": [
+        {
+          "symbol": "GOLDPETAL",
+          "expiry_date": "30APR2027",
+          "close": 14300,
+          "volume_lots": 3394,
+          "open_interest_lots": 5965
+        }
+      ],
+      "note": "A different contract and a thin far-dated expiry, to check the match is not limited to the most liquid row."
     }
   ]
 }

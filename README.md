@@ -86,13 +86,14 @@ Both are reproducible: `src/validation_engine.py`, shown live in the
    Connect and DhanHQ order payloads, or CSV.
 8. **Agent-verified data integrity.** A TinyFish web agent opens mcxindia.com in a
    real browser and re-reads the exchange data independently of our downloaded
-   files. Three recorded checks, all passing:
+   files. Four recorded checks, all passing:
    - a valid date (17/11/2026) is served correctly;
    - a **market holiday (02/10/2026, Gandhi Jayanti) is silently substituted** —
      MCX returned 17 Nov 2026 data while the date input still read 02/10/2026,
      with no message. This is exactly the failure the brief warns about, and a
      downloaded file cannot detect it;
-   - a GOLDM row re-read live matches our stored close, volume and open interest.
+   - a liquid GOLDM row and a thin far-dated GOLDPETAL row, re-read live, match
+     our stored close, volume and open interest exactly.
 
    Recorded in `data/verification/agent_runs.json` and replayed by
    `src/agent_verification.py`, so the comparison is reproducible without
