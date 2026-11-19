@@ -13,6 +13,58 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 
+    <!-- ==========================================================
+         INTRO WATCHDOG / FAIL-SAFE REVEAL
+         The page opens with <body class="is-loading">, which hides the nav,
+         hero, HUD and dashboard. Normally that class is removed 4.08s into
+         the WebGL smelt sequence. If three.js or gsap never arrive (blocked
+         CDN, captive portal) or WebGL is unavailable on the viewer's machine,
+         that code never runs and the page would stay black forever.
+         This reveals the site anyway. It is inert on a healthy load.
+         ========================================================== -->
+    <script>
+    (function () {
+        function reveal(reason) {
+            var b = document.body;
+            if (!b || !b.classList.contains('is-loading')) return;   // intro already done
+            b.classList.remove('is-loading');
+            var l = document.getElementById('aurum-loader');
+            if (l && l.parentNode) l.parentNode.removeChild(l);
+            // Without a WebGL monolith the callouts have nothing to anchor to
+            // and would stack in the top-left corner, so hide them.
+            if (!window.__aurumIntroStarted) {
+                var cl = document.getElementById('monolith-callout-layer');
+                if (cl) cl.style.display = 'none';
+            }
+            try { window.dispatchEvent(new Event('resize')); } catch (e) {}
+            try { if (window.ScrollTrigger) window.ScrollTrigger.refresh(); } catch (e) {}
+            console.warn('[AurumSpread] intro bypassed - ' + reason);
+        }
+        window.__aurumReveal = reveal;
+
+        // A required script failed to load. Reveal only when THREE or gsap is
+        // genuinely missing - never on an unrelated error (a 404 on an image,
+        // say), which must not be allowed to cut a healthy intro short.
+        // If the scripts are present but the 3D init throws, the 10s timer
+        // below handles it.
+        window.addEventListener('error', function () {
+            if (window.__aurumIntroStarted) return;
+            if (typeof THREE === 'undefined' || typeof gsap === 'undefined') {
+                reveal('core script unavailable');
+            }
+        }, true);
+
+        // Intro normally starts within a second or two and reveals at 4.08s.
+        // If it never started by 10s, something is wrong - show the site.
+        setTimeout(function () {
+            if (!window.__aurumIntroStarted) reveal('intro never started (10s)');
+        }, 10000);
+
+        // Absolute backstop: intro started but hung part-way through.
+        setTimeout(function () { reveal('backstop (20s)'); }, 20000);
+    })();
+    </script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -3718,6 +3770,7 @@
                 placementMix: 0.0
             };
 
+            window.__aurumIntroStarted = true;   // tells the watchdog the intro is running
             const loadTimeline = gsap.timeline();
 
             // Step 1: Alchemical Accretion & Molten Pour (00% -> 100%)
