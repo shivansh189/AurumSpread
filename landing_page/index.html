@@ -665,20 +665,6 @@
            otherwise stretch to the full 610px column width. */
         .hero-chapter > div:first-child { align-self: flex-start; }
 
-        /* Short viewports: shrink the hero type so the column also clears the
-           bottom status bar, not just the nav. */
-        @media (max-height: 820px) {
-            .soty-title { font-size: clamp(2.1rem, 4.3vw, 3.9rem); }
-            .hero-chapter > div:first-child { margin-bottom: 0.85rem; }
-            .hero-chapter > p { margin-top: 0.85rem; font-size: 0.82rem; line-height: 1.55; }
-            .hero-chapter > div:last-of-type:not(:first-child) { margin-top: 1.35rem; }
-        }
-        @media (max-height: 660px) {
-            .soty-title { font-size: clamp(1.8rem, 3.6vw, 3rem); }
-            .hero-chapter > div:first-child { margin-bottom: 0.6rem; }
-            .hero-chapter > p { margin-top: 0.6rem; font-size: 0.78rem; line-height: 1.5; }
-            .hero-chapter > div:last-of-type:not(:first-child) { margin-top: 1rem; }
-        }
 
         .soty-title {
             font-size: clamp(2.9rem, 5.7vw, 5.6rem);
@@ -686,6 +672,29 @@
             letter-spacing: -0.03em;
             color: #FFFFFF;
             text-shadow: 0 20px 60px rgba(0, 0, 0, 0.65);
+        }
+
+        /* Short viewports: scale the hero column down so it clears the bottom
+           status bar as well as the nav. These must come AFTER the .soty-title
+           rule above, or that rule wins the cascade and the title stays large.
+           Steps are chosen so the column fits the safe band at each height:
+           the common 1536x702 case (a 1920x1080 screen at 125% Windows scaling)
+           lands in the first step, while 800px and taller keep the full-size type. */
+        @media (max-height: 780px) {
+            .soty-title { font-size: clamp(2.1rem, 4.3vw, 3.9rem); }
+            .hero-chapter > div:first-child { margin-bottom: 0.85rem; }
+            .hero-chapter > p { margin-top: 0.85rem; font-size: 0.82rem; line-height: 1.55; }
+            .hero-chapter > div:last-of-type:not(:first-child) { margin-top: 1.35rem; }
+        }
+        @media (max-height: 620px) {
+            .soty-title { font-size: clamp(1.75rem, 3.4vw, 2.9rem); }
+            .hero-chapter > div:first-child { margin-bottom: 0.55rem; }
+            .hero-chapter > p { margin-top: 0.55rem; font-size: 0.76rem; line-height: 1.5; }
+            .hero-chapter > div:last-of-type:not(:first-child) { margin-top: 0.9rem; }
+        }
+        @media (max-height: 540px) {
+            .soty-title { font-size: clamp(1.5rem, 2.9vw, 2.3rem); }
+            .hero-chapter > p { display: none; }
         }
 
         .gold-metallic-text {
