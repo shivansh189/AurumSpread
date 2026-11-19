@@ -608,6 +608,16 @@
         /* =========================================================
            HERO OVERLAY
            ========================================================= */
+        /* --hero-safe-top  = hero-stage padding-top + telemetry row + breathing gap
+           --hero-safe-bottom = hero-stage padding-bottom + status bar + gap */
+        :root {
+            --hero-safe-top: 124px;
+            --hero-safe-bottom: 76px;
+        }
+        @media (max-width: 768px) {
+            :root { --hero-safe-top: 112px; --hero-safe-bottom: 64px; }
+        }
+
         .hero-stage {
             position: fixed;
             top: 0;
@@ -627,16 +637,48 @@
             .hero-stage { padding: 80px 24px 28px 24px; }
         }
 
+        /* The chapter column is centred inside a SAFE BAND rather than on a raw
+           47% offset. With plain `top: 47%` + translateY(-50%) the column's top
+           edge is 0.47*viewportHeight - height/2, which rises above the fixed nav
+           and the telemetry row on short viewports (roughly under 820px tall) and
+           overlaps them. Spanning top/bottom and centring with flexbox clamps the
+           top edge instead, and `safe center` makes the column start at the top of
+           the band — never above it — when the content is taller than the band.
+           The `bottom` calc keeps the original 47% visual centring whenever the
+           viewport is tall enough for it. */
         .hero-chapter {
             position: absolute;
-            top: 47%;
+            top: var(--hero-safe-top);
+            bottom: max(var(--hero-safe-bottom), calc(var(--hero-safe-top) + 6vh));
             left: 7%;
             max-width: 610px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            justify-content: safe center;
             opacity: 0;
             will-change: transform, opacity;
             pointer-events: none;
         }
         .hero-chapter.active-chap { pointer-events: auto; }
+        /* The column is a flex container now, so the inline-flex ACT pill would
+           otherwise stretch to the full 610px column width. */
+        .hero-chapter > div:first-child { align-self: flex-start; }
+
+        /* Short viewports: shrink the hero type so the column also clears the
+           bottom status bar, not just the nav. */
+        @media (max-height: 820px) {
+            .soty-title { font-size: clamp(2.1rem, 4.3vw, 3.9rem); }
+            .hero-chapter > div:first-child { margin-bottom: 0.85rem; }
+            .hero-chapter > p { margin-top: 0.85rem; font-size: 0.82rem; line-height: 1.55; }
+            .hero-chapter > div:last-of-type:not(:first-child) { margin-top: 1.35rem; }
+        }
+        @media (max-height: 660px) {
+            .soty-title { font-size: clamp(1.8rem, 3.6vw, 3rem); }
+            .hero-chapter > div:first-child { margin-bottom: 0.6rem; }
+            .hero-chapter > p { margin-top: 0.6rem; font-size: 0.78rem; line-height: 1.5; }
+            .hero-chapter > div:last-of-type:not(:first-child) { margin-top: 1rem; }
+        }
 
         .soty-title {
             font-size: clamp(2.9rem, 5.7vw, 5.6rem);
@@ -4332,7 +4374,7 @@
         // =========================================================
         // 2. GSAP SCROLL CHOREOGRAPHY FOR HERO CHAPTERS
         // =========================================================
-        gsap.set(".hero-chapter", { yPercent: -50, y: 0 });
+        gsap.set(".hero-chapter", { y: 0 });
 
         const heroStage = document.getElementById('hero-stage');
         const stepCounter = document.getElementById('hud-step-counter');
@@ -4361,11 +4403,11 @@
             }
         });
 
-        tl.to("#chapter-1", { yPercent: -50, y: -55, opacity: 0, duration: 1.0, ease: "power2.in" }, 0.6)
-          .fromTo("#chapter-2", { yPercent: -50, y: 55, opacity: 0 }, { yPercent: -50, y: 0, opacity: 1, duration: 1.0, ease: "power2.out" }, 1.5)
-          .to("#chapter-2", { yPercent: -50, y: -55, opacity: 0, duration: 1.0, ease: "power2.in" }, 3.0)
-          .fromTo("#chapter-3", { yPercent: -50, y: 55, opacity: 0 }, { yPercent: -50, y: 0, opacity: 1, duration: 1.0, ease: "power2.out" }, 3.9)
-          .to("#chapter-3", { yPercent: -50, y: -55, opacity: 0, duration: 1.0, ease: "power2.in" }, 5.2);
+        tl.to("#chapter-1", { y: -55, opacity: 0, duration: 1.0, ease: "power2.in" }, 0.6)
+          .fromTo("#chapter-2", { y: 55, opacity: 0 }, { y: 0, opacity: 1, duration: 1.0, ease: "power2.out" }, 1.5)
+          .to("#chapter-2", { y: -55, opacity: 0, duration: 1.0, ease: "power2.in" }, 3.0)
+          .fromTo("#chapter-3", { y: 55, opacity: 0 }, { y: 0, opacity: 1, duration: 1.0, ease: "power2.out" }, 3.9)
+          .to("#chapter-3", { y: -55, opacity: 0, duration: 1.0, ease: "power2.in" }, 5.2);
 
         // =========================================================
         // 3. ZERO-LAG MOUSE SPOTLIGHT GLARE ON PAPER CARDS
