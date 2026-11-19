@@ -12,6 +12,7 @@ Live site: **https://aurumspread.vercel.app**
 - [ ] Have the repo open in a second tab: `github.com/shivansh189/AurumSpread`.
 - [ ] Know these four numbers cold: **99 sessions**, **4 contracts**, **−58% edge decay**, **beta 0.0379**.
 - [ ] Phone hotspot ready in case the venue Wi-Fi fails.
+- [ ] Deck open as **PDF** as well as .pptx, in case a font is missing on the venue machine.
 
 ---
 
@@ -180,6 +181,7 @@ Switch to Tab 3, scroll to parity.
 | Problem | What to do |
 |---|---|
 | Site won't load | Switch to the backup video. Keep talking; do not debug on stage. |
+| Black screen on load | Wait 10 seconds — the page now reveals itself without the 3D intro if WebGL or a CDN fails. If it is still black after that, go to the video. |
 | 3D intro stutters | Scroll straight past it to the dashboard — the analytics are the point. |
 | A chart renders empty | Switch tabs and back; Plotly re-renders on resize. |
 | Asked for something not built | "Not in this build — here's what we'd need to add it." Never bluff. |
@@ -193,7 +195,7 @@ Switch to Tab 3, scroll to parity.
 | Sessions / rows / contracts | 99 · 2,376 · 4 |
 | Date range | 1 Jul – 17 Nov 2026 |
 | Data Doctor | 100/100 |
-| Tests | 29 passed, 1 skipped |
+| Tests | 31 passed, 1 skipped |
 | Out-of-sample decay (15 Oct split) | ₹167.48 → ₹70.82 per trade (−58%) |
 | Attribution | beta 0.0379, R² 0.045, ~48% directional share |
 | Active alerts on latest session | 0 of 55 pairs |
