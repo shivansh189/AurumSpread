@@ -428,7 +428,9 @@
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            padding: 76px 5.5% 96px 5.5%;
+            /* Top padding must clear #main-nav (93px tall) or the panel
+               rides up over the nav links and the ENTER TERMINAL button. */
+            padding: 112px 5.5% 72px 5.5%;
             overflow: hidden;
         }
         #gold-dossier-drawer.dossier-open {
@@ -466,8 +468,18 @@
         .holo-projection-matrix {
             position: relative;
             z-index: 2;
-            max-width: 590px;
+            max-width: 520px;
             width: 100%;
+            /* Never taller than the drawer's content box, so it can't reach
+               the nav above or run off the bottom. Content past that scrolls
+               inside the panel rather than being clipped away for good. */
+            max-height: 100%;
+            overflow: hidden;
+            /* Column layout: header and the action footer stay put, only the
+               prose in the middle scrolls, so the contract chips and the
+               ENTER FULL TERMINAL button are always reachable. */
+            display: flex;
+            flex-direction: column;
             font-family: 'JetBrains Mono', monospace;
             color: rgba(246, 244, 240, 0.94);
             background:
@@ -485,7 +497,7 @@
                 0 24px 70px rgba(0, 0, 0, 0.80),
                 inset 0 0 32px rgba(245, 197, 66, 0.08);
             border-radius: 4px;
-            padding: 28px 32px 26px 32px;
+            padding: 22px 26px 20px 26px;
             transform-origin: 50% 100%;
             transform: perspective(1100px) rotateX(8deg) translate3d(0, 42px, 0) scale(0.92);
             clip-path: inset(100% 0 0 0);
@@ -493,12 +505,61 @@
             /* --holoOp/--holoBright/--holoJitterX are updated every frame in JS while
                the hologram is live, to give it an irregular signal-instability feel */
             filter: brightness(var(--holoBright, 1));
-            overflow: hidden;
             transition:
                 transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
                 clip-path 0.75s cubic-bezier(0.16, 1, 0.3, 1),
                 opacity 0.45s ease;
         }
+        #holo-scroll-region {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            overscroll-behavior: contain;
+            padding-right: 8px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(245, 197, 66, 0.45) transparent;
+        }
+        /* Header and footer must never be squeezed by the scroll region. */
+        .holo-projection-matrix > .flex.justify-between,
+        .holo-projection-matrix > #dossier-contract-detail,
+        .holo-projection-matrix > .pt-1,
+        .holo-projection-matrix > .pt-3 { flex: 0 0 auto; }
+
+        /* Amber scrollbar so the new inner scroll matches the hologram
+           instead of showing a default grey/blue system bar. */
+        #holo-scroll-region::-webkit-scrollbar { width: 6px; }
+        #holo-scroll-region::-webkit-scrollbar-track { background: transparent; }
+        #holo-scroll-region::-webkit-scrollbar-thumb {
+            background: rgba(245, 197, 66, 0.38);
+            border-radius: 3px;
+        }
+        #holo-scroll-region::-webkit-scrollbar-thumb:hover {
+            background: rgba(245, 197, 66, 0.62);
+        }
+
+        /* Short viewports: reclaim vertical room so less of the panel scrolls.
+           Tightening the inter-section gaps and paddings buys back most of it
+           without shrinking the text, which has to stay legible on a projector. */
+        @media (max-height: 780px) {
+            #gold-dossier-drawer { padding: 100px 4.5% 34px 4.5%; }
+            .holo-projection-matrix { padding: 16px 22px 14px 22px; }
+            #dossier-para-1, #dossier-para-2 { font-size: 12px; line-height: 1.6; }
+            /* Tailwind's space-y-5 puts 20px between every section; 11px is
+               plenty at this height and saves ~45px overall. */
+            #holo-matrix-card > * + * { margin-top: 11px; }
+            #holo-scroll-region > * + * { margin-top: 11px; }
+            #holo-matrix-card > .flex.justify-between { padding-bottom: 9px; }
+            #dossier-contract-detail { padding: 9px; }
+            /* Slimmer chips so all four contracts sit on one row instead of
+               wrapping, which frees a row for the prose above. */
+            #holo-matrix-card .igloo-discover-link { font-size: 11px; padding: 5px 7px; gap: 4px; letter-spacing: 0.02em; }
+            #holo-matrix-card .igloo-discover-link + .igloo-discover-link { margin-top: 0; }
+            /* Keep the panel title on one line at the narrower 520px width. */
+            #holo-matrix-card > .flex.justify-between .tracking-\[0\.24em\] { letter-spacing: 0.12em; }
+            #holo-matrix-card > .flex.justify-between .tracking-\[0\.18em\] { letter-spacing: 0.08em; }
+        }
+
         #gold-dossier-drawer.dossier-open.holo-active .holo-projection-matrix {
             transform: perspective(1100px) rotateX(0deg) translate3d(0, 0, 0) scale(1);
             clip-path: inset(0% 0 0 0);
@@ -1457,6 +1518,7 @@
             </div>
 
             <!-- Core Intelligence Narrative -->
+            <div id="holo-scroll-region" class="space-y-5">
             <p id="dossier-para-1" class="text-[13px] leading-[1.72] text-white/78 font-normal">
                 AurumSpread, a sovereign commodity intelligence engine engineered for the Multi Commodity Exchange (MCX), unifies India's four fractured gold futures contracts—<span class="text-amber-300 font-semibold">GOLDM (100g)</span>, <span class="text-amber-300 font-semibold">GOLDTEN (10g)</span>, <span class="text-amber-300 font-semibold">GOLDGUINEA (8g)</span>, and <span class="text-amber-300 font-semibold">GOLDPETAL (1g)</span>—into a single zero-lookahead quantitative benchmark.
             </p>
@@ -1464,6 +1526,7 @@
             <p id="dossier-para-2" class="text-[13px] leading-[1.72] text-white/62 font-normal">
                 Suspended inside the chiseled smoky-quartz monolith is a 24-karat (999.9 fine) sovereign gold core. On the exchange floor, wholesale GOLDM settles on 995 purity bars while retail micro-contracts settle on 999 fine gold. Our engine applies exact <span class="text-amber-300 font-semibold">× (999/995)</span> atomic parity normalization, stripping out predictable cost-of-carry roll-down, exchange fee traps, and mandatory 5-day physical tender lockouts.
             </p>
+            </div>
 
             <!-- Live Selected Contract Telemetry Strip -->
             <div id="dossier-contract-detail" class="p-3.5 rounded bg-amber-400/5 border border-amber-400/25 text-xs text-white/70 grid grid-cols-2 sm:grid-cols-4 gap-3">
