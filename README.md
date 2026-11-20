@@ -122,7 +122,6 @@ Both are reproducible: `src/validation_engine.py`, shown live in the
 ```text
 AurumSpread/
 ├── landing_page/index.html         # The product: single-page analytics site (Vercel)
-├── app.py                          # Streamlit dashboard over the same engines
 │
 ├── src/                            # Analytical engines (pure functions over DataFrames)
 │   ├── ingest.py                   # Bhavcopy loading, symbol trimming, date validation
@@ -152,7 +151,11 @@ AurumSpread/
 │   └── processed/
 │       └── historical_gold_futures.csv   # 2,376 rows · 4 contracts · 99 sessions
 │
-└── tests/                          # 31 pytest tests (1 skipped: live MCX scrape)
+├── tests/                          # 31 pytest tests (1 skipped: live MCX scrape)
+│
+└── docs/
+    ├── DEMO_SCRIPT.md              # Finale walkthrough, Q&A, fallback plan
+    └── AurumSpread_HackInHills26_Final.pptx
 ```
 
 **On `copilot_engine.py`:** this is a deterministic keyword-routed responder over
@@ -218,11 +221,31 @@ python scripts/build_expanded_dataset.py   # raw CSVs → dataset
 python scripts/build_site_data.py          # dataset → site
 ```
 
-Run the Streamlit dashboard over the same engines:
+---
+
+## Deployment
+
+The site is deployed on **Vercel** from `landing_page/`, and that is the only
+deployment target: https://aurumspread.vercel.app
+
+It is a single static HTML file with no server and no runtime API calls. Every
+figure it displays is precomputed by `scripts/build_site_data.py` and embedded
+into the page, so there is no backend to fall over mid-demo and the numbers on
+the site cannot drift from the Python engines that produced them.
+
+To publish a change: rebuild the data if the dataset changed, commit, and push —
+Vercel builds `main` automatically.
 
 ```bash
-streamlit run app.py
+python scripts/build_site_data.py   # only if data/processed/ changed
+git add -A && git commit -m "..." && git push
 ```
+
+**Degrading safely.** The page's 3D intro needs WebGL and three external script
+CDNs. If any of them is unavailable — a blocked or intercepted CDN on venue
+Wi-Fi, or a machine without WebGL — a watchdog reveals the full site without the
+intro rather than leaving the viewer on a black screen. The analytics, charts and
+order tickets do not depend on WebGL.
 
 ---
 
