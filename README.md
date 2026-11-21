@@ -6,7 +6,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Tests](https://img.shields.io/badge/pytest-31%20passed-brightgreen.svg)]()
-[![Data](https://img.shields.io/badge/MCX%20Bhavcopy-99%20sessions-yellow.svg)]()
+[![Data](https://img.shields.io/badge/MCX%20Bhavcopy-101%20sessions-yellow.svg)]()
 [![Scope](https://img.shields.io/badge/universe-4%20MCX%20gold%20contracts-gold.svg)]()
 
 **Live site:** https://aurumspread.vercel.app
@@ -29,35 +29,47 @@ prices are not directly comparable:
 AurumSpread turns the public MCX Bhavcopy into a comparable ₹ per 1 gram of 999
 gold series, measures the relative pricing differences between these contracts,
 and then tests honestly whether any of those differences are tradable after real
-costs. **The headline finding is that they are mostly not** — and the project is
-built to show that rather than hide it.
+costs. **The headline finding is that the answer depends on the regime** — and the
+project is built to show that rather than hide it.
 
 ---
 
 ## The finding
-
-The brief states that a rigorous demonstration that no persistent edge survives
-costs is a valid analytical outcome. That is what the data shows.
 
 Thresholds are tuned on an earlier window only, then applied **unchanged** to a
 later window the tuning never saw:
 
 | Split | In-sample net / trade | Out-of-sample net / trade | Trades out-of-sample |
 |---|---|---|---|
-| 15 Sep 2026 | ₹256.93 | ₹141.59 | 17 |
-| 01 Oct 2026 | ₹261.56 | −₹2.50 | 2 |
-| **15 Oct 2026** | **₹167.48** | **₹70.82 (−58%)** | 38 |
-| 01 Nov 2026 | ₹240.83 | −₹2.50 | 2 |
+| 15 Sep 2026 | ₹256.93 | ₹275.29 | 17 |
+| 01 Oct 2026 | ₹261.56 | ₹46.50 | 2 |
+| **15 Oct 2026** | **₹167.48** | **₹205.88** | 42 |
+| 01 Nov 2026 | ₹240.83 | ₹46.50 | 2 |
 
-At every split the apparent edge shrinks substantially out-of-sample, and at two
-splits the tuned thresholds barely trigger at all. On the latest session the
-quiet-alert scanner reports **zero** actionable spreads after costs.
+**The result is regime-dependent, and that is the finding.** On data through
+17 Nov 2026 the same four splits told the opposite story: the 15 Oct split
+decayed from ₹167.48 to ₹70.82 per trade, a 58% loss of edge, and two splits
+went negative. Adding just two sessions — 18 and 19 November, during which
+normalized gold fell 9.4% — reversed it. Out-of-sample now beats in-sample at
+two of the four splits.
+
+Nothing in the method changed. Two sessions of market stress did. A spread
+strategy that looks dead in a quiet tape and alive in a dislocated one has not
+demonstrated a persistent edge; it has demonstrated that 101 sessions is too
+short a sample to settle the question, which is exactly what the limitations
+section below says. We report both windows rather than quoting whichever is
+more flattering.
+
+The quiet-alert scanner reflects the same shift. Through 17 Nov it reported
+**zero** actionable spreads out of 55 pairs. On 19 Nov it reports **3 active
+alerts** out of 60 pairs at the default 1.5σ entry — wider dislocations that do
+survive fees, slippage, the tender lockout and the liquidity floor.
 
 **Attribution.** Regressing daily spread P&L on the daily move of the near leg
-gives beta 0.0379 and R² 0.045 across 1,232 held days: the two legs hedge most
-of the gold move, as a calendar spread should. Of the gross P&L, roughly half is
-relative-value and half is explained by the move in the underlying — reported
-separately rather than claimed as strategy alpha.
+gives beta 0.0332 and R² 0.036 across 1,267 held days: the two legs hedge most
+of the gold move, as a calendar spread should. About 41% of the gross P&L is
+explained by the move in the underlying and the rest is relative value —
+reported separately rather than claimed as strategy alpha.
 
 Both are reproducible: `src/validation_engine.py`, shown live in the
 **Out-of-Sample Validation** panel on the site.
@@ -103,9 +115,10 @@ Both are reproducible: `src/validation_engine.py`, shown live in the
 
 ## Honest limitations
 
-- **The dataset is a 99-session snapshot** (1 Jul – 17 Nov 2026). Conclusions are
-  bounded by that sample; a few months of gold spreads is a small sample for a
-  claim about persistent edge.
+- **The dataset is a 101-session snapshot** (1 Jul – 19 Nov 2026). Conclusions are
+  bounded by that sample, and demonstrably so: extending it by two sessions
+  reversed the sign of the out-of-sample result. A few months of gold spreads is
+  far too small a sample for a claim about persistent edge.
 - **Margin figures are estimates**, not live MCX SPAN margins. The outright and
   calendar-offset percentages are inputs, labelled as assumptions.
 - **No live intraday feed.** MCX publishes Bhavcopy after the session closes, so
@@ -122,7 +135,6 @@ Both are reproducible: `src/validation_engine.py`, shown live in the
 ```text
 AurumSpread/
 ├── landing_page/index.html         # The product: single-page analytics site (Vercel)
-├── app.py                          # Streamlit dashboard over the same engines
 │
 ├── src/                            # Analytical engines (pure functions over DataFrames)
 │   ├── ingest.py                   # Bhavcopy loading, symbol trimming, date validation
@@ -150,9 +162,13 @@ AurumSpread/
 │   ├── verification/               # Recorded TinyFish agent observations
 │   ├── raw/                        # Raw daily Bhavcopy CSVs (gitignored)
 │   └── processed/
-│       └── historical_gold_futures.csv   # 2,376 rows · 4 contracts · 99 sessions
+│       └── historical_gold_futures.csv   # 2,424 rows · 4 contracts · 101 sessions
 │
-└── tests/                          # 31 pytest tests (1 skipped: live MCX scrape)
+├── tests/                          # 31 pytest tests (1 skipped: live MCX scrape)
+│
+└── docs/
+    ├── DEMO_SCRIPT.md              # Finale walkthrough, Q&A, fallback plan
+    └── AurumSpread_HackInHills26_Final.pptx
 ```
 
 **On `copilot_engine.py`:** this is a deterministic keyword-routed responder over
@@ -218,11 +234,31 @@ python scripts/build_expanded_dataset.py   # raw CSVs → dataset
 python scripts/build_site_data.py          # dataset → site
 ```
 
-Run the Streamlit dashboard over the same engines:
+---
+
+## Deployment
+
+The site is deployed on **Vercel** from `landing_page/`, and that is the only
+deployment target: https://aurumspread.vercel.app
+
+It is a single static HTML file with no server and no runtime API calls. Every
+figure it displays is precomputed by `scripts/build_site_data.py` and embedded
+into the page, so there is no backend to fall over mid-demo and the numbers on
+the site cannot drift from the Python engines that produced them.
+
+To publish a change: rebuild the data if the dataset changed, commit, and push —
+Vercel builds `main` automatically.
 
 ```bash
-streamlit run app.py
+python scripts/build_site_data.py   # only if data/processed/ changed
+git add -A && git commit -m "..." && git push
 ```
+
+**Degrading safely.** The page's 3D intro needs WebGL and three external script
+CDNs. If any of them is unavailable — a blocked or intercepted CDN on venue
+Wi-Fi, or a machine without WebGL — a watchdog reveals the full site without the
+intro rather than leaving the viewer on a black screen. The analytics, charts and
+order tickets do not depend on WebGL.
 
 ---
 

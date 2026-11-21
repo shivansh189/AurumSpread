@@ -10,7 +10,7 @@ Live site: **https://aurumspread.vercel.app**
 - [ ] Open the site **before** you go on stage; let the 3D intro finish once so it is cached.
 - [ ] Have the backup demo video ready offline on your laptop.
 - [ ] Have the repo open in a second tab: `github.com/shivansh189/AurumSpread`.
-- [ ] Know these four numbers cold: **99 sessions**, **4 contracts**, **−58% edge decay**, **beta 0.0379**.
+- [ ] Know these four numbers cold: **101 sessions**, **4 contracts**, **regime-dependent out-of-sample result**, **beta 0.0332**.
 - [ ] Phone hotspot ready in case the venue Wi-Fi fails.
 - [ ] Deck open as **PDF** as well as .pptx, in case a font is missing on the venue machine.
 
@@ -21,11 +21,12 @@ Live site: **https://aurumspread.vercel.app**
 > AurumSpread turns MCX's public Bhavcopy into a comparable ₹-per-gram series across
 > the four gold contracts, measures the relative pricing differences between them,
 > and then tests honestly whether any of it is tradable after costs — and shows that
-> mostly it is not.
+> the answer flips with the regime.
 
 Say the last clause with confidence. It is the point, not an apology. The brief
-states that a rigorous demonstration that no persistent edge survives costs is a
-valid analytical outcome.
+states that a rigorous demonstration about whether an edge survives costs is a
+valid analytical outcome — and a measured demonstration that the answer is
+sample-dependent is a stronger result than either a win or a loss.
 
 ---
 
@@ -57,10 +58,14 @@ Point at the data badge.
 
 ### 1:15 — The quiet alert scanner (30s) · *Tab 1, scroll down*
 
-> "Fifty-five expiry pairs scanned on the latest session. Raw triggers: zero.
-> Active alerts: zero. The scanner is built to stay quiet. It only fires when a
-> post-cost edge actually survives fees, slippage, the tender lockout and a
-> liquidity floor."
+> "Sixty expiry pairs scanned on the latest session. Three active alerts.
+>
+> That is unusual. Through the seventeenth of November this scanner reported zero
+> for weeks — it is built to stay quiet, and it only fires when a post-cost edge
+> actually survives fees, slippage, the tender lockout and a liquidity floor.
+>
+> What changed is the market. Gold fell nine point four percent on the eighteenth
+> and nineteenth, and that dislocation opened spreads wide enough to clear costs."
 
 ### 1:45 — **Out-of-sample validation — the centrepiece** (75s) · *Tab 4*
 
@@ -71,13 +76,26 @@ This is the section to spend time on. Switch the split dropdown to **15 Oct 2026
 > unchanged, to the window after it — data the tuning never saw.
 >
 > In-sample: a hundred and fourteen trades, a hundred and sixty-seven rupees net
-> per trade. Out-of-sample: thirty-eight trades, seventy rupees. **Fifty-eight
-> percent of the apparent edge disappears the moment you stop fitting.**"
+> per trade. Out-of-sample: forty-two trades, two hundred and six rupees.
+>
+> Out-of-sample actually beat in-sample. (pause) Now — I want to be careful about
+> what that does and does not mean."
 
-Change the dropdown to **1 Oct 2026**.
+This is the honest part, and it is the strongest thing you can say. Do not skip it.
 
-> "And it's not one unlucky split. At this split the tuned thresholds trigger
-> twice in six weeks and lose money. The in-sample result was selection bias."
+> "Four days ago, on data up to the seventeenth of November, this same panel showed
+> the opposite. The same split decayed from a hundred and sixty-seven rupees to
+> seventy — a fifty-eight percent loss of edge — and two of the four splits lost
+> money.
+>
+> We changed nothing in the method. We added two sessions. Gold fell nine point
+> four percent across them, and the result flipped sign.
+>
+> **So the honest conclusion is not 'this works'. It is that a hundred and one
+> sessions cannot tell you whether this works.** A strategy that looks dead in a
+> quiet tape and alive in a dislocated one has not proven an edge — it has proven
+> the sample is too short. We show you both windows instead of quoting whichever
+> one flatters us."
 
 Point at the attribution box.
 
@@ -97,24 +115,35 @@ Switch to Tab 3, scroll to parity.
 
 > "And a cross-check on the whole market: COMEX converted to Indian landed cost
 > using the duty structure in force since May this year — ten percent customs plus
-> five percent AIDC. MCX is trading about four percent above import parity."
+> five percent AIDC. MCX is trading about three percent above import parity.
+
+The COMEX settlement and the USD/INR rate must be from the **same session** as the
+MCX data, or this number is meaningless. Reference is the 19 Nov COMEX December
+settlement (CME) and the 19 Nov RBI reference rate."
 
 ### 3:40 — Close (20s)
 
 > "Clean data, verified by an autonomous agent. Four contracts normalized. Every
-> signal tested on data it never saw. P&L separated from the gold price. And an
-> honest answer: at these costs, on this sample, there is no persistent edge —
-> which is a finding, not a failure."
+> signal tested on data it never saw. P&L separated from the gold price.
+>
+> And an honest answer: on a hundred and one sessions, we cannot tell you whether
+> this edge is real. We can tell you it reverses on two days of stress — and that
+> measuring how fragile a result is, is itself a finding, not a failure."
 
 ---
 
 ## Q&A — hard questions and honest answers
 
 ### "Your backtest makes money in-sample. Isn't that just overfitting?"
-> "Yes, and we show it. That's what the validation panel is for. In-sample is a
-> hundred and sixty-seven rupees per trade, out-of-sample is seventy — a
-> fifty-eight percent decay. At two of the four splits it goes negative. We'd
-> rather show the decay than quote the in-sample number."
+> "We show you exactly how fragile it is. On data to the seventeenth of November,
+> out-of-sample decayed fifty-eight percent and two splits went negative. On data
+> to the nineteenth, after a nine percent gold selloff, out-of-sample beat
+> in-sample. Same method, two more sessions, opposite conclusion.
+>
+> So yes — the in-sample number is not trustworthy. But neither is the current
+> out-of-sample number. That is the real result: the sample is too short to
+> settle it, and we would rather tell you that than pick the flattering window."
+"
 
 ### "How do I know there's no look-ahead bias?"
 > "Three things. Z-scores use an expanding window of strictly prior observations
@@ -150,11 +179,12 @@ Switch to Tab 3, scroll to parity.
 > recent available trading day for a holiday or malformed date, and a downloaded
 > file can't detect that on its own."
 
-### "Ninety-nine sessions is a small sample."
-> "Agreed, and it's in our limitations section. Four and a half months of gold
-> spreads can't settle whether an edge persists across regimes. What it can do —
-> and does — is show that an edge fitted on one window doesn't carry to the next.
-> More history would make the negative result stronger, not weaker."
+### "A hundred sessions is a small sample."
+> "Agreed, and we can now prove it rather than just assert it. Adding two sessions
+> flipped our out-of-sample result from a fifty-eight percent decay to
+> out-performance. If two days can reverse the sign, the sample is too short —
+> that is a measured conclusion, not a disclaimer. Two or three years of history
+> is what it would take to say anything durable."
 
 ### "What's genuinely novel here versus a Bloomberg terminal?"
 > "Three things. Purity and unit normalization is automated rather than a manual
@@ -192,12 +222,12 @@ Switch to Tab 3, scroll to parity.
 
 | | |
 |---|---|
-| Sessions / rows / contracts | 99 · 2,376 · 4 |
-| Date range | 1 Jul – 17 Nov 2026 |
+| Sessions / rows / contracts | 101 · 2,424 · 4 |
+| Date range | 1 Jul – 19 Nov 2026 |
 | Data Doctor | 100/100 |
 | Tests | 31 passed, 1 skipped |
-| Out-of-sample decay (15 Oct split) | ₹167.48 → ₹70.82 per trade (−58%) |
-| Attribution | beta 0.0379, R² 0.045, ~48% directional share |
-| Active alerts on latest session | 0 of 55 pairs |
-| India gold basis | +₹552/g (+4.15%) over landed parity |
-| Implied carry (GOLDM front) | ~13.4% p.a., contango |
+| Out-of-sample (15 Oct split) | ₹167.48 → ₹205.88 per trade — *was* ₹70.82 (−58%) on data to 17 Nov |
+| Attribution | beta 0.0332, R² 0.036, ~41% directional share |
+| Active alerts on latest session | 3 of 60 pairs (was 0 of 55 to 17 Nov) |
+| India gold basis | +₹402/g (+3.16%) over landed parity |
+| Implied carry (GOLDM front) | ~11.4% p.a., contango |
